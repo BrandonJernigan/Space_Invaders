@@ -13,16 +13,15 @@ type Player struct {
 }
 
 var playerBullets []*PlayerBullet
+var screenWidth int32
+var screenHeight int32
+var lastShotTime time.Time
 
 const (
 	playerSpeed        = 4
 	playerSize         = 64
 	playerShotCoolDown = time.Millisecond * 250
 )
-
-var screenWidth int32
-var screenHeight int32
-var lastShotTime time.Time
 
 func NewPlayer(renderer *sdl.Renderer) (*Player, error) {
 	tex, err := utilities.LoadTexture(renderer, "sprites/player.bmp")
@@ -136,5 +135,4 @@ func shoot(position Vector) {
 			return
 		}
 	}
-	return
 }

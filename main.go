@@ -47,7 +47,17 @@ func createGameObjects(renderer *sdl.Renderer) {
 		return
 	}
 
+	enemy, err := components.NewEnemy(
+		renderer,
+		"one",
+		components.Vector{X: 0, Y: 0})
+	if err != nil {
+		panic(fmt.Errorf("creating new enemy: %v", err))
+		return
+	}
+
 	gameObjects = append(gameObjects, player)
+	gameObjects = append(gameObjects, enemy)
 }
 
 func updateGameObjects(renderer *sdl.Renderer) {
