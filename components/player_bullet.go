@@ -23,9 +23,9 @@ func NewPlayerBullet(renderer *sdl.Renderer) (*PlayerBullet, error) {
 
 	object := &GameObject{
 		texture:  tex,
-		Position: Vector{X: 300, Y: 500},
+		Position: Vector{X: 0, Y: 0},
 		Size:     Size{W: bulletSize, H: bulletSize},
-		Active:   true}
+		Active:   false}
 
 	bullet := &PlayerBullet{
 		Object: object,
@@ -50,6 +50,10 @@ func (bullet *PlayerBullet) OnDraw(renderer *sdl.Renderer) error {
 func (bullet *PlayerBullet) OnUpdate() error {
 	if bullet.Object.Active {
 		bullet.Object.Position.Y -= bulletSpeed
+	}
+
+	if bullet.Object.Position.Y < 0 {
+		bullet.Object.Active = false
 	}
 
 	return nil

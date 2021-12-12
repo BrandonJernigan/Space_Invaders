@@ -12,6 +12,8 @@ type Player struct {
 	ShotCoolDown time.Duration
 }
 
+var playerBullets []*PlayerBullet
+
 const (
 	playerSpeed        = 4
 	playerSize         = 64
@@ -20,6 +22,7 @@ const (
 
 var screenWidth int32
 var screenHeight int32
+var lastShotTime time.Time
 
 func NewPlayer(renderer *sdl.Renderer) (*Player, error) {
 	tex, err := utilities.LoadTexture(renderer, "sprites/player.bmp")
@@ -43,6 +46,11 @@ func NewPlayer(renderer *sdl.Renderer) (*Player, error) {
 		ShotCoolDown: playerShotCoolDown,
 	}
 
+	err = createPlayerAttributes(renderer)
+	if err != nil {
+		return nil, err
+	}
+
 	return player, nil
 }
 
@@ -55,11 +63,29 @@ func (player *Player) OnDraw(renderer *sdl.Renderer) error {
 		&sdl.Rect{X: 0, Y: 0, W: size.W, H: size.H},
 		&sdl.Rect{X: int32(position.X), Y: int32(position.Y), W: size.W, H: size.H})
 
+	for _, bullet := range playerBullets {
+		if bullet.CheckActive() {
+			err := bullet.OnDraw(renderer)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	return err
 }
 
 func (player *Player) OnUpdate() error {
 	keys := sdl.GetKeyboardState()
+
+	for _, bullet := range playerBullets {
+		if bullet.CheckActive() {
+			err := bullet.OnUpdate()
+			if err != nil {
+				return err
+			}
+		}
+	}
 
 	if keys[sdl.SCANCODE_A] == 1 {
 		if player.Object.Position.X-playerSpeed > 0 {
@@ -71,9 +97,44 @@ func (player *Player) OnUpdate() error {
 		}
 	}
 
+	if keys[sdl.SCANCODE_SPACE] == 1 {
+		if time.Now().After(lastShotTime.Add(playerShotCoolDown)) {
+			shoot(player.Object.Position)
+		}
+	}
+
 	return nil
 }
 
 func (player *Player) CheckActive() bool {
 	return player.Object.Active
+}
+
+func createPlayerAttributes(renderer *sdl.Renderer) error {
+	for i := 0; i < 30; i++ {
+		b, err := NewPlayerBullet(renderer)
+		if err != nil {
+			return err
+		}
+
+		playerBullets = append(playerBullets, b)
+	}
+
+	return nil
+}
+
+func shoot(position Vector) {
+	position.X += bulletSize / 2.0
+
+	for _, bullet := range playerBullets {
+		if !bullet.CheckActive() {
+			bullet.Object.Position = position
+			bullet.Object.Active = true
+
+			lastShotTime = time.Now()
+
+			return
+		}
+	}
+	return
 }
