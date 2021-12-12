@@ -32,7 +32,6 @@ func createWindow() *sdl.Window {
 
 func createRenderer(window *sdl.Window) *sdl.Renderer {
 	r, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_PRESENTVSYNC)
-
 	if err != nil {
 		panic(fmt.Errorf("creating renderer: %v", err))
 		return nil
@@ -48,28 +47,23 @@ func createGameObjects(renderer *sdl.Renderer) {
 		return
 	}
 
-	bullet, err := components.NewBullet(renderer)
-	if err != nil {
-		panic(fmt.Errorf("creating new bullet: %v", err))
-		return
-	}
-
 	gameObjects = append(gameObjects, player)
-	gameObjects = append(gameObjects, bullet)
 }
 
 func updateGameObjects(renderer *sdl.Renderer) {
 	for _, object := range gameObjects {
-		err := object.OnUpdate()
-		if err != nil {
-			fmt.Println("updating object: ", err)
-			return
-		}
+		if object.CheckActive() {
+			err := object.OnUpdate()
+			if err != nil {
+				fmt.Println("updating object: ", err)
+				return
+			}
 
-		err = object.OnDraw(renderer)
-		if err != nil {
-			fmt.Println("drawing object: ", err)
-			return
+			err = object.OnDraw(renderer)
+			if err != nil {
+				fmt.Println("drawing object: ", err)
+				return
+			}
 		}
 	}
 }

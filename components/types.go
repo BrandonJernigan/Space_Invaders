@@ -13,10 +13,10 @@ type Size struct {
 }
 
 type Updater interface {
+	CheckActive() bool
 	OnUpdate() error
 	OnDraw(renderer *sdl.Renderer) error
 }
-
 type Collider interface {
 	OnCollision() error
 }

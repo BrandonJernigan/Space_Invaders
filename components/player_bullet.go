@@ -5,7 +5,7 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-type Bullet struct {
+type PlayerBullet struct {
 	Object *GameObject
 	Speed  float64
 }
@@ -15,7 +15,7 @@ const (
 	bulletSpeed = 8
 )
 
-func NewBullet(renderer *sdl.Renderer) (*Bullet, error) {
+func NewPlayerBullet(renderer *sdl.Renderer) (*PlayerBullet, error) {
 	tex, err := utilities.LoadTexture(renderer, "sprites/player-bullet.bmp")
 	if err != nil {
 		return nil, err
@@ -23,11 +23,11 @@ func NewBullet(renderer *sdl.Renderer) (*Bullet, error) {
 
 	object := &GameObject{
 		texture:  tex,
-		Position: Vector{X: 0, Y: 0},
+		Position: Vector{X: 300, Y: 500},
 		Size:     Size{W: bulletSize, H: bulletSize},
 		Active:   true}
 
-	bullet := &Bullet{
+	bullet := &PlayerBullet{
 		Object: object,
 		Speed:  bulletSpeed,
 	}
@@ -35,7 +35,7 @@ func NewBullet(renderer *sdl.Renderer) (*Bullet, error) {
 	return bullet, nil
 }
 
-func (bullet *Bullet) OnDraw(renderer *sdl.Renderer) error {
+func (bullet *PlayerBullet) OnDraw(renderer *sdl.Renderer) error {
 	size := bullet.Object.Size
 	position := bullet.Object.Position
 
@@ -47,6 +47,14 @@ func (bullet *Bullet) OnDraw(renderer *sdl.Renderer) error {
 	return err
 }
 
-func (bullet *Bullet) OnUpdate() error {
+func (bullet *PlayerBullet) OnUpdate() error {
+	if bullet.Object.Active {
+		bullet.Object.Position.Y -= bulletSpeed
+	}
+
 	return nil
+}
+
+func (bullet *PlayerBullet) CheckActive() bool {
+	return bullet.Object.Active
 }

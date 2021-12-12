@@ -73,3 +73,7 @@ func (player *Player) OnUpdate() error {
 
 	return nil
 }
+
+func (player *Player) CheckActive() bool {
+	return player.Object.Active
+}
