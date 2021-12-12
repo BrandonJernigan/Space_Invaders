@@ -5,7 +5,7 @@ import (
 )
 
 func LoadTexture(renderer *sdl.Renderer, filename string) (*sdl.Texture, error) {
-	img, err := sdl.LoadBMP("sprites/player.bmp")
+	img, err := sdl.LoadBMP(filename)
 	if err != nil {
 		return nil, err
 	}

@@ -48,7 +48,14 @@ func createGameObjects(renderer *sdl.Renderer) {
 		return
 	}
 
+	bullet, err := components.NewBullet(renderer)
+	if err != nil {
+		panic(fmt.Errorf("creating new bullet: %v", err))
+		return
+	}
+
 	gameObjects = append(gameObjects, player)
+	gameObjects = append(gameObjects, bullet)
 }
 
 func updateGameObjects(renderer *sdl.Renderer) {

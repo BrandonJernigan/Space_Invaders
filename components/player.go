@@ -22,7 +22,7 @@ var screenWidth int32
 var screenHeight int32
 
 func NewPlayer(renderer *sdl.Renderer) (*Player, error) {
-	tex, err := utilities.LoadTexture(renderer, "../sprites/player.bmp")
+	tex, err := utilities.LoadTexture(renderer, "sprites/player.bmp")
 	if err != nil {
 		return nil, err
 	}
@@ -54,10 +54,8 @@ func (player *Player) OnDraw(renderer *sdl.Renderer) error {
 		player.Object.texture,
 		&sdl.Rect{X: 0, Y: 0, W: size.W, H: size.H},
 		&sdl.Rect{X: int32(position.X), Y: int32(position.Y), W: size.W, H: size.H})
-	if err != nil {
-		return err
-	}
-	return nil
+
+	return err
 }
 
 func (player *Player) OnUpdate() error {
