@@ -53,6 +53,7 @@ func (shield *GameObject) OnUpdate() error {
 }
 
 func (shield *GameObject) OnCollision() error {
+	shield.Active = false
 	return nil
 }
 

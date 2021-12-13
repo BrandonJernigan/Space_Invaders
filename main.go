@@ -2,6 +2,7 @@ package main
 
 import (
 	"Space_Invaders_Go/components"
+	"Space_Invaders_Go/utilities"
 	"fmt"
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -9,6 +10,8 @@ import (
 var gameObjects []components.Updater
 var shieldObject *components.GameObject
 var enemyCount int
+var enemyValue int
+var score int
 
 const (
 	screenWidth  = 600
@@ -102,7 +105,7 @@ func updateGameObjects(renderer *sdl.Renderer) {
 	}
 }
 
-func checkEnemyCollisions() {
+func checkEnemyCollisions(renderer *sdl.Renderer) {
 	for _, bullet := range components.PlayerBullets {
 		bulletPosition := bullet.Object.Position
 
@@ -116,7 +119,15 @@ func checkEnemyCollisions() {
 					if bulletPosition.X >= enemyPosition.X && bulletPosition.X <= (enemyPosition.X+32) {
 						bullet.OnCollision()
 						enemy.OnCollision()
+
+						tex, _ := utilities.LoadTexture(renderer, "sprites/enemy-explosion.bmp")
+						renderer.Copy(
+							tex,
+							&sdl.Rect{X: 0, Y: 0, W: 64, H: 64},
+							&sdl.Rect{X: int32(enemyPosition.X), Y: int32(enemyPosition.Y), W: 64, H: 64})
+
 						enemyCount--
+						score += enemyValue
 						return
 					}
 				}
@@ -135,6 +146,24 @@ func checkShieldCollisions() {
 				// check x position
 				if bulletPosition.X >= shieldObject.Position.X && bulletPosition.X <= (shieldObject.Position.X+88) {
 					bullet.OnCollision()
+					return
+				}
+			}
+		}
+	}
+
+	for _, enemy := range components.Enemies {
+		enemyPosition := enemy.Object.Position
+		shieldPosition := shieldObject.Position
+
+		if enemy.CheckActive() && shieldObject.CheckActive() {
+			// check y position
+			if enemyPosition.Y >= (shieldPosition.Y-20) && enemyPosition.Y <= (shieldPosition.Y+60) {
+				// check x position
+				if enemyPosition.X >= shieldPosition.X && enemyPosition.X <= (shieldPosition.X+32) {
+					enemy.OnCollision()
+					shieldObject.OnCollision()
+					enemyCount--
 					return
 				}
 			}
@@ -175,6 +204,7 @@ func main() {
 	createGameObjects(renderer)
 
 	enemyCount = len(components.Enemies)
+	enemyValue = 50
 
 	gameLoop := true
 
@@ -186,7 +216,7 @@ func main() {
 
 		updateGameObjects(renderer)
 		checkShieldCollisions()
-		checkEnemyCollisions()
+		checkEnemyCollisions(renderer)
 		checkWinCondition()
 
 		renderer.Present()
