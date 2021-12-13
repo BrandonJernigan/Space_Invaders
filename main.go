@@ -5,10 +5,13 @@ import (
 	"Space_Invaders_Go/utilities"
 	"fmt"
 	"github.com/veandco/go-sdl2/sdl"
+	"os"
 )
 
 var gameObjects []components.Updater
 var shieldObject *components.GameObject
+var playerObject *components.Player
+var winState bool
 var enemyCount int
 var enemyValue int
 var score int
@@ -54,6 +57,7 @@ func createGameObjects(renderer *sdl.Renderer) {
 		return
 	}
 	gameObjects = append(gameObjects, player)
+	playerObject = player
 
 	shield, err := components.NewShield(renderer)
 	if err != nil {
@@ -136,7 +140,7 @@ func checkEnemyCollisions(renderer *sdl.Renderer) {
 	}
 }
 
-func checkShieldCollisions() {
+func checkShieldCollisions(renderer *sdl.Renderer) {
 	for _, bullet := range components.PlayerBullets {
 		bulletPosition := bullet.Object.Position
 
@@ -163,6 +167,13 @@ func checkShieldCollisions() {
 				if enemyPosition.X >= shieldPosition.X && enemyPosition.X <= (shieldPosition.X+32) {
 					enemy.OnCollision()
 					shieldObject.OnCollision()
+
+					tex, _ := utilities.LoadTexture(renderer, "sprites/enemy-explosion.bmp")
+					renderer.Copy(
+						tex,
+						&sdl.Rect{X: 0, Y: 0, W: 64, H: 64},
+						&sdl.Rect{X: int32(enemyPosition.X), Y: int32(enemyPosition.Y), W: 64, H: 64})
+
 					enemyCount--
 					return
 				}
@@ -171,21 +182,117 @@ func checkShieldCollisions() {
 	}
 }
 
-func checkWinCondition() {
-	if enemyCount == 0 {
-		fmt.Println("win")
+func checkPlayerCollisions(renderer *sdl.Renderer) {
+	for _, enemy := range components.Enemies {
+		enemyPosition := enemy.Object.Position
+		playerPosition := playerObject.Object.Position
+
+		if enemy.CheckActive() && playerObject.CheckActive() {
+			// check y position
+			if enemyPosition.Y >= playerPosition.Y {
+				// check x position
+				if enemyPosition.X >= playerPosition.X && enemyPosition.X <= playerPosition.X+32 {
+					tex, _ := utilities.LoadTexture(renderer, "sprites/player-explosion.bmp")
+					playerObject.OnCollision()
+					renderer.Copy(
+						tex,
+						&sdl.Rect{X: 0, Y: 0, W: 64, H: 64},
+						&sdl.Rect{X: int32(enemyPosition.X), Y: int32(enemyPosition.Y), W: 64, H: 64})
+				}
+			}
+		}
 	}
 }
 
-func pollQuitEvent() bool {
+func checkEnemyPositions() bool {
+	for _, enemy := range components.Enemies {
+		enemyPosition := enemy.Object.Position
+		if enemyPosition.Y-64 >= screenHeight {
+			winState = false
+			return true
+		}
+	}
+	return false
+}
+
+func checkGameEndCondition() bool {
+	if enemyCount == 0 {
+		winState = true
+		return true
+	} else if !playerObject.CheckActive() {
+		winState = false
+		return true
+	}
+	return false
+}
+
+func pollStartEvent() bool {
+	keys := sdl.GetKeyboardState()
+	if keys[sdl.SCANCODE_SPACE] == 1 {
+		return true
+	}
+
+	return false
+}
+
+func pollQuitEvent() {
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 		switch event.(type) {
 		case *sdl.QuitEvent:
-			return false
+			sdl.Quit()
+			os.Exit(0)
+			return
 		}
 	}
+}
 
-	return true
+func mainMenuLoop(renderer *sdl.Renderer) {
+	menuLoop := true
+	for menuLoop {
+		pollQuitEvent()
+		menuLoop = !pollStartEvent()
+
+		renderer.SetDrawColor(0, 0, 0, 255)
+		renderer.Clear()
+
+		renderer.Present()
+	}
+}
+
+func mainGameLoop(renderer *sdl.Renderer) {
+	gameLoop := true
+	for gameLoop {
+		pollQuitEvent()
+
+		renderer.SetDrawColor(0, 0, 0, 255)
+		renderer.Clear()
+
+		updateGameObjects(renderer)
+		checkShieldCollisions(renderer)
+		checkEnemyCollisions(renderer)
+		checkPlayerCollisions(renderer)
+
+		gameLoop = !checkGameEndCondition()
+		gameLoop = !checkEnemyPositions()
+
+		renderer.Present()
+	}
+}
+
+func endGameLoop(renderer *sdl.Renderer) {
+	endLoop := true
+	for endLoop {
+		pollQuitEvent()
+
+		if winState {
+			renderer.SetDrawColor(0, 0, 0, 255)
+		} else {
+			renderer.SetDrawColor(0, 255, 0, 255)
+		}
+		renderer.Clear()
+
+		renderer.Present()
+	}
 }
 
 func main() {
@@ -206,19 +313,7 @@ func main() {
 	enemyCount = len(components.Enemies)
 	enemyValue = 50
 
-	gameLoop := true
-
-	for gameLoop {
-		gameLoop = pollQuitEvent()
-
-		renderer.SetDrawColor(0, 0, 0, 255)
-		renderer.Clear()
-
-		updateGameObjects(renderer)
-		checkShieldCollisions()
-		checkEnemyCollisions(renderer)
-		checkWinCondition()
-
-		renderer.Present()
-	}
+	mainMenuLoop(renderer)
+	mainGameLoop(renderer)
+	endGameLoop(renderer)
 }
