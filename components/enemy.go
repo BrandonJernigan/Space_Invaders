@@ -10,6 +10,8 @@ type Enemy struct {
 	Speed  float64
 }
 
+var Enemies []*Enemy
+
 const (
 	enemySpeed = 4
 	enemySize  = 64
@@ -32,6 +34,8 @@ func NewEnemy(renderer *sdl.Renderer, enemyType string, position Vector) (*Enemy
 		Object: object,
 		Speed:  enemySpeed,
 	}
+
+	Enemies = append(Enemies, enemy)
 
 	return enemy, nil
 }

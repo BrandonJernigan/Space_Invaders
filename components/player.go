@@ -12,7 +12,7 @@ type Player struct {
 	ShotCoolDown time.Duration
 }
 
-var playerBullets []*PlayerBullet
+var PlayerBullets []*PlayerBullet
 var screenWidth int32
 var screenHeight int32
 var lastShotTime time.Time
@@ -62,7 +62,7 @@ func (player *Player) OnDraw(renderer *sdl.Renderer) error {
 		&sdl.Rect{X: 0, Y: 0, W: size.W, H: size.H},
 		&sdl.Rect{X: int32(position.X), Y: int32(position.Y), W: size.W, H: size.H})
 
-	for _, bullet := range playerBullets {
+	for _, bullet := range PlayerBullets {
 		if bullet.CheckActive() {
 			err := bullet.OnDraw(renderer)
 			if err != nil {
@@ -77,7 +77,7 @@ func (player *Player) OnDraw(renderer *sdl.Renderer) error {
 func (player *Player) OnUpdate() error {
 	keys := sdl.GetKeyboardState()
 
-	for _, bullet := range playerBullets {
+	for _, bullet := range PlayerBullets {
 		if bullet.CheckActive() {
 			err := bullet.OnUpdate()
 			if err != nil {
@@ -116,7 +116,7 @@ func createPlayerAttributes(renderer *sdl.Renderer) error {
 			return err
 		}
 
-		playerBullets = append(playerBullets, b)
+		PlayerBullets = append(PlayerBullets, b)
 	}
 
 	return nil
@@ -125,7 +125,7 @@ func createPlayerAttributes(renderer *sdl.Renderer) error {
 func shoot(position Vector) {
 	position.X += bulletSize / 2.0
 
-	for _, bullet := range playerBullets {
+	for _, bullet := range PlayerBullets {
 		if !bullet.CheckActive() {
 			bullet.Object.Position = position
 			bullet.Object.Active = true

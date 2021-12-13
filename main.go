@@ -7,6 +7,7 @@ import (
 )
 
 var gameObjects []components.Updater
+var enemyCount int
 
 const (
 	screenWidth  = 600
@@ -94,6 +95,36 @@ func updateGameObjects(renderer *sdl.Renderer) {
 	}
 }
 
+func checkCollisions() {
+	for _, bullet := range components.PlayerBullets {
+		bulletPosition := bullet.Object.Position
+
+		for _, enemy := range components.Enemies {
+			enemyPosition := enemy.Object.Position
+
+			if bullet.CheckActive() && enemy.CheckActive() {
+				// check y position
+				if bulletPosition.Y >= (enemyPosition.Y-20) && bulletPosition.Y <= (enemyPosition.Y+20) {
+					// check x position
+					if bulletPosition.X >= enemyPosition.X && bulletPosition.X <= (enemyPosition.X+32) {
+						fmt.Println("collision")
+						bullet.Object.Active = false
+						enemy.Object.Active = false
+						enemyCount--
+						return
+					}
+				}
+			}
+		}
+	}
+}
+
+func checkWinCondition() {
+	if enemyCount == 0 {
+		fmt.Println("win")
+	}
+}
+
 func pollQuitEvent() bool {
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 		switch event.(type) {
@@ -120,6 +151,8 @@ func main() {
 
 	createGameObjects(renderer)
 
+	enemyCount = len(components.Enemies)
+
 	gameLoop := true
 
 	for gameLoop {
@@ -129,6 +162,8 @@ func main() {
 		renderer.Clear()
 
 		updateGameObjects(renderer)
+		checkCollisions()
+		checkWinCondition()
 
 		renderer.Present()
 	}
