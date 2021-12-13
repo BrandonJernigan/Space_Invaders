@@ -248,12 +248,29 @@ func pollQuitEvent() {
 
 func mainMenuLoop(renderer *sdl.Renderer) {
 	menuLoop := true
+
+	titleTex, _ := utilities.LoadTexture(renderer, "sprites/title.bmp")
+	defer titleTex.Destroy()
+
+	promptTex, _ := utilities.LoadTexture(renderer, "sprites/prompt.bmp")
+	defer promptTex.Destroy()
+
 	for menuLoop {
 		pollQuitEvent()
 		menuLoop = !pollStartEvent()
 
 		renderer.SetDrawColor(0, 0, 0, 255)
 		renderer.Clear()
+
+		renderer.Copy(
+			titleTex,
+			&sdl.Rect{X: 0, Y: 0, W: 946, H: 337},
+			&sdl.Rect{X: 100, Y: 100, W: 400, H: 200})
+
+		renderer.Copy(
+			promptTex,
+			&sdl.Rect{X: 0, Y: 0, W: 1431, H: 63},
+			&sdl.Rect{X: 25, Y: 400, W: 550, H: 20})
 
 		renderer.Present()
 	}
@@ -272,8 +289,9 @@ func mainGameLoop(renderer *sdl.Renderer) {
 		checkEnemyCollisions(renderer)
 		checkPlayerCollisions(renderer)
 
-		gameLoop = !checkGameEndCondition()
-		gameLoop = !checkEnemyPositions()
+		if checkGameEndCondition() || checkEnemyPositions() {
+			gameLoop = false
+		}
 
 		renderer.Present()
 	}
@@ -281,15 +299,25 @@ func mainGameLoop(renderer *sdl.Renderer) {
 
 func endGameLoop(renderer *sdl.Renderer) {
 	endLoop := true
+
+	var endTex *sdl.Texture
+
+	if winState {
+		endTex, _ = utilities.LoadTexture(renderer, "sprites/you-win.bmp")
+	} else {
+		endTex, _ = utilities.LoadTexture(renderer, "sprites/game-over.bmp")
+	}
+
 	for endLoop {
 		pollQuitEvent()
 
-		if winState {
-			renderer.SetDrawColor(0, 0, 0, 255)
-		} else {
-			renderer.SetDrawColor(0, 255, 0, 255)
-		}
+		renderer.SetDrawColor(0, 0, 0, 255)
 		renderer.Clear()
+
+		renderer.Copy(
+			endTex,
+			&sdl.Rect{X: 0, Y: 0, W: 852, H: 84},
+			&sdl.Rect{X: 150, Y: 400, W: 300, H: 30})
 
 		renderer.Present()
 	}
