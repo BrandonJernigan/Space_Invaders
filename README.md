@@ -2,7 +2,7 @@
 <h6 align="center">Written in Go using SDL2</h6>
 
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/81219815/145862610-e2355611-b7d7-4d76-9426-d2fe9e2f19f5.png" alt="" />
+  <img width=350 src="https://user-images.githubusercontent.com/81219815/145862610-e2355611-b7d7-4d76-9426-d2fe9e2f19f5.png" alt="" />
 </p>
 
 ## Usage
