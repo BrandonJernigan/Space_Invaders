@@ -59,6 +59,10 @@ func (bullet *PlayerBullet) OnUpdate() error {
 	return nil
 }
 
+func (bullet *PlayerBullet) OnCollision() {
+	bullet.Object.Active = false
+}
+
 func (bullet *PlayerBullet) CheckActive() bool {
 	return bullet.Object.Active
 }

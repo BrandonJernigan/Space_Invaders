@@ -18,7 +18,7 @@ type Updater interface {
 	OnDraw(renderer *sdl.Renderer) error
 }
 type Collider interface {
-	OnCollision() error
+	OnCollision()
 }
 
 type GameObject struct {

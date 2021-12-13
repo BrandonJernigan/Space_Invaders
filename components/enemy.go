@@ -56,6 +56,10 @@ func (enemy *Enemy) OnUpdate() error {
 	return nil
 }
 
+func (enemy *Enemy) OnCollision() {
+	enemy.Object.Active = false
+}
+
 func (enemy *Enemy) CheckActive() bool {
 	return enemy.Object.Active
 }

@@ -105,6 +105,10 @@ func (player *Player) OnUpdate() error {
 	return nil
 }
 
+func (player *Player) OnCollision() {
+	player.Object.Active = false
+}
+
 func (player *Player) CheckActive() bool {
 	return player.Object.Active
 }

@@ -7,6 +7,7 @@ import (
 )
 
 var gameObjects []components.Updater
+var shieldObject *components.GameObject
 var enemyCount int
 
 const (
@@ -42,15 +43,21 @@ func createRenderer(window *sdl.Window) *sdl.Renderer {
 }
 
 func createGameObjects(renderer *sdl.Renderer) {
+	createEnemyFleet(renderer)
+
 	player, err := components.NewPlayer(renderer)
 	if err != nil {
 		panic(fmt.Errorf("creating new player: %v", err))
 		return
 	}
-
-	createEnemyFleet(renderer)
-
 	gameObjects = append(gameObjects, player)
+
+	shield, err := components.NewShield(renderer)
+	if err != nil {
+		return
+	}
+	shieldObject = shield
+	gameObjects = append(gameObjects, shield)
 }
 
 func createEnemyFleet(renderer *sdl.Renderer) {
@@ -95,7 +102,7 @@ func updateGameObjects(renderer *sdl.Renderer) {
 	}
 }
 
-func checkCollisions() {
+func checkEnemyCollisions() {
 	for _, bullet := range components.PlayerBullets {
 		bulletPosition := bullet.Object.Position
 
@@ -107,12 +114,28 @@ func checkCollisions() {
 				if bulletPosition.Y >= (enemyPosition.Y-20) && bulletPosition.Y <= (enemyPosition.Y+20) {
 					// check x position
 					if bulletPosition.X >= enemyPosition.X && bulletPosition.X <= (enemyPosition.X+32) {
-						fmt.Println("collision")
-						bullet.Object.Active = false
-						enemy.Object.Active = false
+						bullet.OnCollision()
+						enemy.OnCollision()
 						enemyCount--
 						return
 					}
+				}
+			}
+		}
+	}
+}
+
+func checkShieldCollisions() {
+	for _, bullet := range components.PlayerBullets {
+		bulletPosition := bullet.Object.Position
+
+		if bullet.CheckActive() && shieldObject.CheckActive() {
+			// check y position
+			if bulletPosition.Y >= (shieldObject.Position.Y-20) && bulletPosition.Y <= (shieldObject.Position.Y+60) {
+				// check x position
+				if bulletPosition.X >= shieldObject.Position.X && bulletPosition.X <= (shieldObject.Position.X+88) {
+					bullet.OnCollision()
+					return
 				}
 			}
 		}
@@ -162,7 +185,8 @@ func main() {
 		renderer.Clear()
 
 		updateGameObjects(renderer)
-		checkCollisions()
+		checkShieldCollisions()
+		checkEnemyCollisions()
 		checkWinCondition()
 
 		renderer.Present()
