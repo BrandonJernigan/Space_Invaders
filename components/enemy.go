@@ -13,7 +13,7 @@ type Enemy struct {
 var Enemies []*Enemy
 
 const (
-	enemySpeed = 4
+	enemySpeed = .25
 	enemySize  = 64
 )
 
@@ -53,6 +53,7 @@ func (enemy *Enemy) OnDraw(renderer *sdl.Renderer) error {
 }
 
 func (enemy *Enemy) OnUpdate() error {
+	enemy.Object.Position.Y += enemySpeed
 	return nil
 }
 
