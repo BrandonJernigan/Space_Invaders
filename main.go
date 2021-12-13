@@ -47,17 +47,33 @@ func createGameObjects(renderer *sdl.Renderer) {
 		return
 	}
 
-	enemy, err := components.NewEnemy(
-		renderer,
-		"one",
-		components.Vector{X: 0, Y: 0})
-	if err != nil {
-		panic(fmt.Errorf("creating new enemy: %v", err))
-		return
-	}
+	createEnemyFleet(renderer)
 
 	gameObjects = append(gameObjects, player)
-	gameObjects = append(gameObjects, enemy)
+}
+
+func createEnemyFleet(renderer *sdl.Renderer) {
+	enemyType := [6]string{"one", "two", "three", "four", "five", "six"}
+	baseYPosition := 64 * 5
+
+	for i := 0; i < 6; i++ {
+		yPosition := baseYPosition - (64 * i)
+
+		for j := 0; j < 9; j++ {
+			xPosition := j * 64
+
+			enemy, err := components.NewEnemy(
+				renderer,
+				enemyType[i],
+				components.Vector{X: float64(xPosition), Y: float64(yPosition)})
+			if err != nil {
+				panic(fmt.Errorf("creating new enemy: %v", err))
+				return
+			}
+
+			gameObjects = append(gameObjects, enemy)
+		}
+	}
 }
 
 func updateGameObjects(renderer *sdl.Renderer) {
