@@ -22,6 +22,11 @@ project.
 ```
 git clone https://github.com/BrandonJernigan/Space_Invaders_Go.git
 ```
+###### Ensure that you have SDL2
+```js
+// Ensure that you have the base sdl2 library installed
+```
+Refer to this [link](https://github.com/veandco/go-sdl2) for more information.
 ###### Run the application
 ```js
 // Run the application using your IDE of choice
