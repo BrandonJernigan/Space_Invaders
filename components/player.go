@@ -43,6 +43,7 @@ func (player *Player) LoadPlayerBullets(renderer *sdl.Renderer) error {
 			return err
 		}
 		playerBullets = append(playerBullets, bullet)
+		lastShotTime = time.Now()
 	}
 	return nil
 }

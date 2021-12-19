@@ -12,6 +12,7 @@ type GameScene struct {
 	ScoreText   Text
 	LivesText   Text
 	GameObjects []components.Renderer
+	Enemies     []interface{}
 }
 
 const (
@@ -23,7 +24,7 @@ func NewGameScene() *GameScene {
 	return &GameScene{Score: 0}
 }
 
-func (scene *GameScene) Load(renderer *sdl.Renderer) error {
+func (scene *GameScene) LoadUI(renderer *sdl.Renderer) error {
 	baseFont, err := ttf.OpenFont(fontBold, smallFontSize)
 	if err != nil {
 		return err
@@ -45,12 +46,53 @@ func (scene *GameScene) Load(renderer *sdl.Renderer) error {
 
 	baseFont.Close()
 
+	return nil
+}
+
+func (scene *GameScene) LoadPlayer(renderer *sdl.Renderer) error {
 	player := components.NewPlayer(components.Vector{X: 302, Y: 800})
-	err = player.Load(renderer)
+	err := player.Load(renderer)
 	if err != nil {
 		return err
 	}
 	scene.GameObjects = append(scene.GameObjects, player)
+
+	return nil
+}
+
+func (scene *GameScene) LoadEnemies(renderer *sdl.Renderer) error {
+	for i := 0; i < 8; i++ {
+		squid := components.NewAlienSquid(components.Vector{X: 0, Y: 10})
+		positionX := squid.Object.Size.W*int32(i) + 25
+		squid.Object.Position.X = positionX
+
+		err := squid.Load(renderer)
+		if err != nil {
+			return err
+		}
+
+		scene.GameObjects = append(scene.GameObjects, squid)
+		scene.Enemies = append(scene.Enemies, squid)
+	}
+
+	return nil
+}
+
+func (scene *GameScene) Load(renderer *sdl.Renderer) error {
+	err := scene.LoadUI(renderer)
+	if err != nil {
+		return err
+	}
+
+	err = scene.LoadPlayer(renderer)
+	if err != nil {
+		return err
+	}
+
+	err = scene.LoadEnemies(renderer)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
