@@ -1,7 +1,6 @@
 package components
 
 import (
-	"Space_Invaders_Go/utilities"
 	"github.com/veandco/go-sdl2/sdl"
 	"time"
 )
@@ -12,128 +11,124 @@ type Player struct {
 	ShotCoolDown time.Duration
 }
 
-var PlayerBullets []*PlayerBullet
-var screenWidth int32
-var screenHeight int32
-var lastShotTime time.Time
-
 const (
-	playerSpeed        = 4
-	playerSize         = 64
+	playerSprite       = "sprites/player.bmp"
+	playerWidth        = 96
+	playerHeight       = 60
+	playerSpeed        = 1
 	playerShotCoolDown = time.Millisecond * 250
 )
 
-func NewPlayer(renderer *sdl.Renderer) (*Player, error) {
-	tex, err := utilities.LoadTexture(renderer, "sprites/player.bmp")
-	if err != nil {
-		return nil, err
-	}
+var playerBullets []*PlayerBullet
+var lastShotTime time.Time
 
-	screenWidth, screenHeight, _ = renderer.GetOutputSize()
-	positionX := (screenWidth - playerSize) / 2.00
-	positionY := screenHeight - playerSize
-
+func NewPlayer(position Vector) *Player {
 	object := &GameObject{
-		texture:  tex,
-		Position: Vector{X: float64(positionX), Y: float64(positionY)},
-		Size:     Size{W: playerSize, H: playerSize},
-		Active:   true}
+		Size:     Size{W: playerWidth, H: playerHeight},
+		Position: position,
+	}
 
 	player := &Player{
-		Object:       object,
-		Speed:        playerSpeed,
-		ShotCoolDown: playerShotCoolDown,
-	}
+		Object: object,
+		Speed:  playerSpeed}
 
-	err = createPlayerAttributes(renderer)
-	if err != nil {
-		return nil, err
-	}
-
-	return player, nil
+	return player
 }
 
-func (player *Player) OnDraw(renderer *sdl.Renderer) error {
-	size := player.Object.Size
-	position := player.Object.Position
+func (player *Player) LoadPlayerBullets(renderer *sdl.Renderer) error {
+	for i := 0; i < 30; i++ {
+		bullet := NewPlayerBullet()
+		err := bullet.Load(renderer)
+		if err != nil {
+			return err
+		}
+		playerBullets = append(playerBullets, bullet)
+	}
+	return nil
+}
 
-	err := renderer.Copy(
-		player.Object.texture,
-		&sdl.Rect{X: 0, Y: 0, W: size.W, H: size.H},
-		&sdl.Rect{X: int32(position.X), Y: int32(position.Y), W: size.W, H: size.H})
+func (player *Player) Load(renderer *sdl.Renderer) error {
+	img, err := sdl.LoadBMP(playerSprite)
+	if err != nil {
+		return err
+	}
 
-	for _, bullet := range PlayerBullets {
-		if bullet.CheckActive() {
-			err := bullet.OnDraw(renderer)
+	tex, err := renderer.CreateTextureFromSurface(img)
+	if err != nil {
+		return err
+	}
+
+	player.Object.Texture = tex
+	img.Free()
+
+	err = player.LoadPlayerBullets(renderer)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (player *Player) Draw(renderer *sdl.Renderer) error {
+	for _, bullet := range playerBullets {
+		if bullet.Object.Active {
+			err := bullet.Draw(renderer)
 			if err != nil {
 				return err
 			}
 		}
 	}
+	err := renderer.Copy(
+		player.Object.Texture,
+		&sdl.Rect{X: 0, Y: 0, W: player.Object.Size.W, H: player.Object.Size.H},
+		&sdl.Rect{
+			X: player.Object.Position.X,
+			Y: player.Object.Position.Y,
+			W: player.Object.Size.W,
+			H: player.Object.Size.H})
 
 	return err
 }
 
-func (player *Player) OnUpdate() error {
-	keys := sdl.GetKeyboardState()
-
-	for _, bullet := range PlayerBullets {
-		if bullet.CheckActive() {
-			err := bullet.OnUpdate()
-			if err != nil {
-				return err
-			}
+func (player *Player) Update() error {
+	for _, bullet := range playerBullets {
+		err := bullet.Update()
+		if err != nil {
+			return err
 		}
 	}
 
-	if keys[sdl.SCANCODE_A] == 1 {
-		if player.Object.Position.X-playerSpeed > 0 {
-			player.Object.Position.X -= player.Speed
-		}
-	} else if keys[sdl.SCANCODE_D] == 1 {
-		if player.Object.Position.X+playerSpeed <= float64(screenWidth)-playerSize {
-			player.Object.Position.X += player.Speed
-		}
+	keys := sdl.GetKeyboardState()
+	if keys[sdl.SCANCODE_A] == 1 && (player.Object.Position.X-playerSpeed) >= 0 {
+		player.Object.Position.X -= playerSpeed
+	} else if keys[sdl.SCANCODE_D] == 1 && (player.Object.Position.X+playerSpeed <= 604) {
+		player.Object.Position.X += playerSpeed
 	}
 
 	if keys[sdl.SCANCODE_SPACE] == 1 {
 		if time.Now().After(lastShotTime.Add(playerShotCoolDown)) {
-			shoot(player.Object.Position)
+			player.Shoot()
 		}
 	}
 
 	return nil
 }
 
-func (player *Player) OnCollision() {
-	player.Object.Active = false
-}
-
-func (player *Player) CheckActive() bool {
-	return player.Object.Active
-}
-
-func createPlayerAttributes(renderer *sdl.Renderer) error {
-	for i := 0; i < 30; i++ {
-		b, err := NewPlayerBullet(renderer)
-		if err != nil {
-			return err
-		}
-
-		PlayerBullets = append(PlayerBullets, b)
+func (player *Player) Unload() error {
+	err := player.Object.Texture.Destroy()
+	if err != nil {
+		return err
 	}
-
 	return nil
 }
 
-func shoot(position Vector) {
-	position.X += bulletSize / 2.0
+func (player *Player) Shoot() {
+	for _, bullet := range playerBullets {
+		if !bullet.Object.Active {
+			positionX := player.Object.Position.X + (player.Object.Size.W / 2.0)
+			positionY := player.Object.Position.Y
 
-	for _, bullet := range PlayerBullets {
-		if !bullet.CheckActive() {
-			bullet.Object.Position = position
+			bullet.SetPosition(Vector{X: positionX, Y: positionY})
 			bullet.Object.Active = true
-
 			lastShotTime = time.Now()
 
 			return

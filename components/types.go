@@ -3,8 +3,8 @@ package components
 import "github.com/veandco/go-sdl2/sdl"
 
 type Vector struct {
-	X float64
-	Y float64
+	X int32
+	Y int32
 }
 
 type Size struct {
@@ -12,17 +12,19 @@ type Size struct {
 	H int32
 }
 
-type Updater interface {
-	CheckActive() bool
-	OnUpdate() error
-	OnDraw(renderer *sdl.Renderer) error
+type Renderer interface {
+	Load(renderer *sdl.Renderer) error
+	Draw(renderer *sdl.Renderer) error
+	Update() error
+	Unload() error
 }
+
 type Collider interface {
-	OnCollision()
+	OnCollision() error
 }
 
 type GameObject struct {
-	texture  *sdl.Texture
+	Texture  *sdl.Texture
 	Position Vector
 	Size     Size
 	Active   bool

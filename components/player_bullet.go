@@ -1,55 +1,64 @@
 package components
 
-import (
-	"Space_Invaders_Go/utilities"
-	"github.com/veandco/go-sdl2/sdl"
-)
+import "github.com/veandco/go-sdl2/sdl"
 
 type PlayerBullet struct {
 	Object *GameObject
-	Speed  float64
+	Speed  int
 }
 
 const (
-	bulletSize  = 32
-	bulletSpeed = 8
+	playerBulletSprite = "sprites/player-bullet.bmp"
+	playerBulletWidth  = 3
+	playerBulletHeight = 9
+	playerBulletSpeed  = 1
 )
 
-func NewPlayerBullet(renderer *sdl.Renderer) (*PlayerBullet, error) {
-	tex, err := utilities.LoadTexture(renderer, "sprites/player-bullet.bmp")
-	if err != nil {
-		return nil, err
-	}
-
+func NewPlayerBullet() *PlayerBullet {
 	object := &GameObject{
-		texture:  tex,
-		Position: Vector{X: 0, Y: 0},
-		Size:     Size{W: bulletSize, H: bulletSize},
-		Active:   false}
-
-	bullet := &PlayerBullet{
-		Object: object,
-		Speed:  bulletSpeed,
+		Size:   Size{W: playerBulletWidth, H: playerBulletHeight},
+		Active: false,
 	}
 
-	return bullet, nil
+	return &PlayerBullet{Object: object}
 }
 
-func (bullet *PlayerBullet) OnDraw(renderer *sdl.Renderer) error {
-	size := bullet.Object.Size
-	position := bullet.Object.Position
+func (bullet *PlayerBullet) Load(renderer *sdl.Renderer) error {
+	img, err := sdl.LoadBMP(playerBulletSprite)
+	if err != nil {
+		return err
+	}
 
+	tex, err := renderer.CreateTextureFromSurface(img)
+	if err != nil {
+		return err
+	}
+
+	bullet.Object.Texture = tex
+	img.Free()
+	return nil
+}
+
+func (bullet *PlayerBullet) SetPosition(position Vector) {
+	bullet.Object.Position = position
+}
+
+func (bullet *PlayerBullet) Draw(renderer *sdl.Renderer) error {
 	err := renderer.Copy(
-		bullet.Object.texture,
-		&sdl.Rect{X: 0, Y: 0, W: size.W, H: size.H},
-		&sdl.Rect{X: int32(position.X), Y: int32(position.Y), W: size.W, H: size.H})
+		bullet.Object.Texture,
+		&sdl.Rect{X: 0, Y: 0, W: bullet.Object.Size.W, H: bullet.Object.Size.H},
+		&sdl.Rect{
+			X: bullet.Object.Position.X,
+			Y: bullet.Object.Position.Y,
+			W: bullet.Object.Size.W,
+			H: bullet.Object.Size.H})
 
 	return err
 }
 
-func (bullet *PlayerBullet) OnUpdate() error {
+func (bullet *PlayerBullet) Update() error {
 	if bullet.Object.Active {
-		bullet.Object.Position.Y -= bulletSpeed
+		bullet.Object.Position.Y -= playerBulletSpeed
 	}
 
 	if bullet.Object.Position.Y < 0 {
@@ -59,10 +68,11 @@ func (bullet *PlayerBullet) OnUpdate() error {
 	return nil
 }
 
-func (bullet *PlayerBullet) OnCollision() {
-	bullet.Object.Active = false
-}
+func (bullet *PlayerBullet) Unload() error {
+	err := bullet.Object.Texture.Destroy()
+	if err != nil {
+		return err
+	}
 
-func (bullet *PlayerBullet) CheckActive() bool {
-	return bullet.Object.Active
+	return nil
 }
