@@ -6,7 +6,7 @@
 </p>
 
 ## Usage
-This application is a sample first level for a re-creation of Space Invaders. The structure of the project is
+This application is a simple recreation of Space Invaders. The structure of the project is
 broken into components with the intention for easy project expansion. Aside from this, it is just a fun weekend
 project.
 
