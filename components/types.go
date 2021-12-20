@@ -17,10 +17,11 @@ type Renderer interface {
 	Draw(renderer *sdl.Renderer) error
 	Update() error
 	Unload() error
+	CheckActive() bool
 }
 
 type Collider interface {
-	OnCollision() error
+	OnCollision()
 }
 
 type GameObject struct {

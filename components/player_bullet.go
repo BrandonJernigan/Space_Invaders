@@ -76,3 +76,11 @@ func (bullet *PlayerBullet) Unload() error {
 
 	return nil
 }
+
+func (bullet *PlayerBullet) CheckActive() bool {
+	return bullet.Object.Active
+}
+
+func (bullet *PlayerBullet) OnCollision() {
+	bullet.Object.Active = false
+}

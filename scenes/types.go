@@ -7,7 +7,7 @@ import (
 type Scene interface {
 	Load(renderer *sdl.Renderer) error
 	Draw(renderer *sdl.Renderer) error
-	Update() error
+	Update(renderer *sdl.Renderer) error
 	Unload() error
 }
 

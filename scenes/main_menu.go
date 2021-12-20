@@ -65,7 +65,11 @@ func (menu *MainMenu) Draw(renderer *sdl.Renderer) error {
 	err = renderer.Copy(
 		menu.PlayButton.Texture,
 		nil,
-		&sdl.Rect{X: playButtonCenter, Y: 600, W: menu.PlayButton.Surface.W, H: menu.PlayButton.Surface.H})
+		&sdl.Rect{
+			X: playButtonCenter,
+			Y: 600,
+			W: menu.PlayButton.Surface.W,
+			H: menu.PlayButton.Surface.H})
 	if err != nil {
 		return err
 	}
@@ -73,7 +77,7 @@ func (menu *MainMenu) Draw(renderer *sdl.Renderer) error {
 	return nil
 }
 
-func (menu *MainMenu) Update() error {
+func (menu *MainMenu) Update(renderer *sdl.Renderer) error {
 	return nil
 }
 

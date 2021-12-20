@@ -9,6 +9,7 @@ type Player struct {
 	Object       *GameObject
 	Speed        float64
 	ShotCoolDown time.Duration
+	Bullets      []*PlayerBullet
 }
 
 const (
@@ -16,16 +17,16 @@ const (
 	playerWidth        = 96
 	playerHeight       = 60
 	playerSpeed        = 4
-	playerShotCoolDown = time.Millisecond * 800
+	playerShotCoolDown = time.Millisecond * 250
 )
 
-var playerBullets []*PlayerBullet
 var lastShotTime time.Time
 
 func NewPlayer(position Vector) *Player {
 	object := &GameObject{
 		Size:     Size{W: playerWidth, H: playerHeight},
 		Position: position,
+		Active:   true,
 	}
 
 	player := &Player{
@@ -42,7 +43,7 @@ func (player *Player) LoadPlayerBullets(renderer *sdl.Renderer) error {
 		if err != nil {
 			return err
 		}
-		playerBullets = append(playerBullets, bullet)
+		player.Bullets = append(player.Bullets, bullet)
 		lastShotTime = time.Now()
 	}
 	return nil
@@ -70,7 +71,7 @@ func (player *Player) Load(renderer *sdl.Renderer) error {
 }
 
 func (player *Player) Draw(renderer *sdl.Renderer) error {
-	for _, bullet := range playerBullets {
+	for _, bullet := range player.Bullets {
 		if bullet.Object.Active {
 			err := bullet.Draw(renderer)
 			if err != nil {
@@ -91,7 +92,7 @@ func (player *Player) Draw(renderer *sdl.Renderer) error {
 }
 
 func (player *Player) Update() error {
-	for _, bullet := range playerBullets {
+	for _, bullet := range player.Bullets {
 		err := bullet.Update()
 		if err != nil {
 			return err
@@ -122,8 +123,16 @@ func (player *Player) Unload() error {
 	return nil
 }
 
+func (player *Player) CheckActive() bool {
+	return player.Object.Active
+}
+
+func (player *Player) OnCollision() {
+	player.Object.Active = false
+}
+
 func (player *Player) Shoot() {
-	for _, bullet := range playerBullets {
+	for _, bullet := range player.Bullets {
 		if !bullet.Object.Active {
 			positionX := player.Object.Position.X + (player.Object.Size.W / 2.0)
 			positionY := player.Object.Position.Y

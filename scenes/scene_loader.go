@@ -34,14 +34,32 @@ func (loader *SceneLoader) LoadMainMenu(renderer *sdl.Renderer) error {
 }
 
 func (loader *SceneLoader) LoadGameScene(renderer *sdl.Renderer) error {
-	game := NewGameScene()
+	game := NewGameScene(loader.LoadScoreScene)
 	loader.GameRunning = true
 	err := game.Load(renderer)
 	if err != nil {
+		fmt.Println("game scene renderer")
 		return err
 	}
 
 	loader.ActiveScene = game
+	return nil
+}
+
+func (loader *SceneLoader) LoadScoreScene(renderer *sdl.Renderer, score int) error {
+	scene := NewScoreScene(score)
+	loader.GameRunning = false
+	err := loader.ActiveScene.Unload()
+	if err != nil {
+		return err
+	}
+
+	err = scene.Load(renderer)
+	if err != nil {
+		return err
+	}
+
+	loader.ActiveScene = scene
 	return nil
 }
 
@@ -64,7 +82,7 @@ func (loader *SceneLoader) PollKeyEvents(renderer *sdl.Renderer) error {
 }
 
 func (loader *SceneLoader) DrawScene(renderer *sdl.Renderer) error {
-	err := loader.ActiveScene.Update()
+	err := loader.ActiveScene.Update(renderer)
 	if err != nil {
 		return err
 	}
