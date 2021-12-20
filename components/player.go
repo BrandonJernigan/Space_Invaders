@@ -15,8 +15,8 @@ const (
 	playerSprite       = "sprites/player.bmp"
 	playerWidth        = 96
 	playerHeight       = 60
-	playerSpeed        = 1
-	playerShotCoolDown = time.Millisecond * 250
+	playerSpeed        = 4
+	playerShotCoolDown = time.Millisecond * 800
 )
 
 var playerBullets []*PlayerBullet

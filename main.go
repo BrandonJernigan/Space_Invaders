@@ -40,7 +40,7 @@ func createWindowAndRenderer() {
 		os.Exit(1)
 	}
 
-	renderer, err = sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
+	renderer, err = sdl.CreateRenderer(window, -1, sdl.RENDERER_PRESENTVSYNC)
 	if err != nil {
 		fmt.Println("creating renderer: ", err)
 		os.Exit(1)

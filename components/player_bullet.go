@@ -11,7 +11,7 @@ const (
 	playerBulletSprite = "sprites/player-bullet.bmp"
 	playerBulletWidth  = 3
 	playerBulletHeight = 9
-	playerBulletSpeed  = 1
+	playerBulletSpeed  = 6
 )
 
 func NewPlayerBullet() *PlayerBullet {
